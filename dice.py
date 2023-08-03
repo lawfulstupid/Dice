@@ -7,6 +7,7 @@ class Die:
 	def __init__(self, pdf):
 		self.pdf = pdf
 		self.totalWeight = sum(pdf.values())
+		self.maxRoll = max(pdf.keys())
 	
 	@staticmethod
 	def d(n,s=None):
@@ -52,15 +53,8 @@ class Die:
 			successes += self.pdf[value] * result[True]
 			failures += self.pdf[value] * result[False]
 		return successes / float(successes + failures)
-
-	def map(self, f):
-		pdf = {}
-		for value in self:
-			newValue = f(value)
-			pdf[newValue] = pdf.get(newValue, 0) + self[value]
-		return Die(pdf)
 	
-	def flatMap(self, f):
+	def map(self, f):
 		pdf = {}
 		for value in self:
 			result = Die.wrap(f(value))
