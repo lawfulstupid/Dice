@@ -68,13 +68,11 @@ class Die:
 				pdf[newValue] = pdf.get(newValue, 0) + self[value] * result[newValue]
 		return Die(pdf)
 
-	def filter(self, test, failValue = 0):
+	def filter(self, test):
 		pdf = {}
 		for value in self:
 			if test(value):
-				pdf[value] = pdf.get(value,0) + self[value]
-			else:
-				pdf[failValue] = pdf.get(failValue,0) + self[value]
+				pdf[value] = self.pdf[value]
 		return Die(pdf)
 	
 	def combine(this, that, f):

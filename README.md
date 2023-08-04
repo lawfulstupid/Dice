@@ -14,4 +14,4 @@ Usage:
 * Compute expected value: `d6.exp()`.
 * Map dice values to new values: `d20.map(lambda n: n + 1)` is equivalent to `d20 + 1`.
 * Map dice values to new dice: `d20.map(lambda n: d(n))` is equivalent to rolling a d20, then rolling a die with face value between 1 and the result.
-* Filter out dice values (maps approved values to themselves and rejected values to 0, or the provided failValue): `d6.filter(lambda n: n >= 5)` produces p.d.f `{0: 4/6, 5: 1/6, 6: 1/6}`.
+* Filter out dice values: `d6.filter(lambda n: n >= 5)` produces p.d.f `{5: 1, 6: 1}`.
