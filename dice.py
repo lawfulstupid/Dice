@@ -38,12 +38,12 @@ class Die:
 		return self.pdf.__next__()
 	
 	def roll(self):
-		r = random.randrange(self.totalWeight)
+		r = random.uniform(0, self.totalWeight)
 		s = 0
 		for value in self:
+			s += self[value]
 			if r <= s:
 				return value
-			s += self[value]
 	
 	def exp(self):
 		s = 0
