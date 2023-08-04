@@ -40,10 +40,16 @@ class Die:
 	def roll(self):
 		r = random.randrange(self.totalWeight)
 		s = 0
-		for value in self.pdf:
+		for value in self:
 			if r <= s:
 				return value
 			s += self[value]
+	
+	def exp(self):
+		s = 0
+		for value in self:
+			s += value * self[value]
+		return s
 	
 	def prob(self, test):
 		successes = 0
