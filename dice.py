@@ -45,6 +45,9 @@ class Die:
 			if r <= s:
 				return value
 	
+	def explode(self, limit = 9):
+		return self.map(lambda n: Die.pure(n) + (self.explode(limit - 1) if n == self.maxRoll and limit > 0 else 0))
+	
 	def avg(self):
 		s = 0
 		for value in self:
