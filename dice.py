@@ -65,7 +65,8 @@ class Die:
 		for value in self:
 			result = Die.wrap(f(value))
 			for newValue in result:
-				pdf[newValue] = pdf.get(newValue, 0) + self[value] * result[newValue]
+				if (newValue != None):
+					pdf[newValue] = pdf.get(newValue, 0) + self[value] * result[newValue]
 		return Die(pdf)
 
 	def filter(self, test):
