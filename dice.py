@@ -45,7 +45,7 @@ class Die:
 			if r <= s:
 				return value
 	
-	def exp(self):
+	def avg(self):
 		s = 0
 		for value in self:
 			s += value * self[value]
