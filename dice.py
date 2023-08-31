@@ -6,8 +6,9 @@ class Die:
 
 	def __init__(self, pdf):
 		self.pdf = pdf
+		if None in self.pdf:
+			del self.pdf[None]
 		self.totalWeight = sum(pdf.values())
-		self.maxRoll = max(pdf.keys())
 	
 	@staticmethod
 	def d(n,s=None):
@@ -25,7 +26,14 @@ class Die:
 	
 	@staticmethod
 	def pure(n):
-		return Die({n: 1})
+		if n == None:
+			return Die({})
+		else:
+			return Die({n: 1})
+	
+	@staticmethod
+	def zero():
+		return Die.pure(0)
 	
 	@staticmethod
 	def wrap(d):
@@ -46,13 +54,19 @@ class Die:
 				return value
 	
 	def explode(self, limit = 9):
-		return self.map(lambda n: Die.pure(n) + (self.explode(limit - 1) if n == self.maxRoll and limit > 0 else 0))
+		return self.map(lambda n: Die.pure(n) + (self.explode(limit - 1) if n == self.getMax() and limit > 0 else 0))
 	
 	def avg(self):
 		s = 0
 		for value in self:
 			s += value * self[value]
 		return s
+	
+	def getMax(self):
+		return max(self.pdf.keys())
+	
+	def getMin(self):
+		return min(self.pdf.keys())
 	
 	def prob(self, test):
 		successes = 0
@@ -63,6 +77,11 @@ class Die:
 			failures += self.pdf[value] * result[False]
 		return successes / float(successes + failures)
 	
+	def values(self):
+		values = list(self.pdf.keys())
+		values.sort()
+		return values
+	
 	def map(self, f):
 		pdf = {}
 		for value in self:
@@ -72,12 +91,8 @@ class Die:
 					pdf[newValue] = pdf.get(newValue, 0) + self[value] * result[newValue]
 		return Die(pdf)
 
-	def filter(self, test):
-		pdf = {}
-		for value in self:
-			if test(value):
-				pdf[value] = self.pdf[value]
-		return Die(pdf)
+	def filter(self, test, failValue=0):
+		return self.map(lambda x: x if test(x) else failValue)
 	
 	def combine(this, that, f):
 		pdf = {}
@@ -102,6 +117,9 @@ class Die:
 	
 	def __mul__(this, that):
 		return this.combine(that, lambda a,b: a*b)
+	
+	def __xor__(this, that):
+		return this.combine(that, max)
 	
 	def __truediv__(this, that):
 		return this // that
@@ -155,8 +173,22 @@ class Die:
 		probFormat = "{1:." + str(longestProb) + "f}"
 		format = valueFormat + ": " + probFormat
 		return list(map(lambda value: format.format(str(value), self[value]), sorted(self.pdf)))
+	
+	def graph(self, screenWidth=100):
+		maxNumWidth = 0
+		maxProb = 0
+		for n in self:
+			maxNumWidth = max(maxNumWidth, len(str(n)))
+			maxProb = max(maxProb, self[n])
+		for n in self.values():
+			print(str(n).rjust(maxNumWidth), end=' | ')
+			bar_len = int(round(screenWidth * self[n] / maxProb))
+			for i in range(bar_len):
+				print('#', end='')
+			print()
 
 d = Die.d
+coin = Die({0: 1, 1: 1})
 d2 = d(2)
 d4 = d(4)
 d6 = d(6)
@@ -167,3 +199,12 @@ d20 = d(20)
 d100 = d(100)
 fudge = Die({-1: 2, 0: 2, 1: 2})
 chaos = d4+d6+d8+d10+d12
+
+def test(confirmer):
+	dice = [d4, d6, d8, d10, d12]
+	for i in range(5):
+		for j in range(i,5):
+			da = dice[i]
+			db = dice[j]
+			result = (da & db).map(lambda r: confirmer(r[0], da, db) * 2 - 1 if r[0] == r[1] else 0)
+			print("{0:f}\t{1:f}\t{2:f}".format(result[-1], result[0], result[1]))
