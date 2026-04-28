@@ -162,7 +162,7 @@ class Die:
 	
 	def __str__(self):
 		return reduce(lambda a,b: a.strip() + ", " + b.strip(), self.lines())
-	
+
 	def lines(self):
 		longestValue = 0
 		longestProb = 0
@@ -199,6 +199,11 @@ d20 = d(20)
 d100 = d(100)
 fudge = Die({-1: 2, 0: 2, 1: 2})
 chaos = d4+d6+d8+d10+d12
+
+def uncurry(f):
+	def g(t):
+		return f(*t)
+	return g
 
 def test(confirmer):
 	dice = [d4, d6, d8, d10, d12]
