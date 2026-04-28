@@ -62,6 +62,9 @@ class Die:
 			s += value * self[value]
 		return s
 	
+	def exp(self):
+		return self.avg()
+	
 	def getMax(self):
 		return max(self.pdf.keys())
 	
