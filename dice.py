@@ -207,12 +207,3 @@ def uncurry(f):
 	def g(t):
 		return f(*t)
 	return g
-
-def test(confirmer):
-	dice = [d4, d6, d8, d10, d12]
-	for i in range(5):
-		for j in range(i,5):
-			da = dice[i]
-			db = dice[j]
-			result = (da & db).map(lambda r: confirmer(r[0], da, db) * 2 - 1 if r[0] == r[1] else 0)
-			print("{0:f}\t{1:f}\t{2:f}".format(result[-1], result[0], result[1]))
