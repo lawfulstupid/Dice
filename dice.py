@@ -217,7 +217,7 @@ class Die:
 		return list(map(lambda value: format.format(str(value), self[value]), sorted(self.pdf)))
 
 	# Produce a graph of the probability distribution
-	def graph(self, screenWidth=100):
+	def graph(self, screenWidth=80):
 		maxNumWidth = 0
 		maxProb = 0
 		for n in self:
