@@ -1,3 +1,17 @@
+diff --git a/node_modules/pyodide/console-v2.html b/node_modules/pyodide/console-v2.html
+index c81928a..85cb66d 100644
+--- a/node_modules/pyodide/console-v2.html
++++ b/node_modules/pyodide/console-v2.html
+@@ -141,6 +141,9 @@ of the stable console.
+ 
+         const pyconsole = PyodideConsole(pyodide.globals);
+ 
++        const { injectDice } = await import('./inject-dice.js');
++        await injectDice(pyodide);
++
+         const namespace = pyodide.globals.get("dict")();
+         const await_fut = pyodide.runPython(
+           `
 diff --git a/node_modules/pyodide/console.html b/node_modules/pyodide/console.html
 index b5b47ef..d6b0530 100644
 --- a/node_modules/pyodide/console.html
