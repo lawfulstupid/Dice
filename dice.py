@@ -96,8 +96,13 @@ class Die:
 		values.sort()
 		return values
 	
+	def isTuples(self):
+		return isinstance(self.values()[0], tuple)
+	
 	# Transform the rollable values, e.g. Die(6).map(lambda n: n * 2)
-	def map(self, f):
+	def map(self, f, autoUncurry=True):
+		if (autoUncurry and self.isTuples()):
+			return self.map(uncurry(f), False)
 		pdf = {}
 		for value in self:
 			result = Die.wrap(f(value))
