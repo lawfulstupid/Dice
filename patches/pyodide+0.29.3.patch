@@ -1,14 +1,13 @@
 diff --git a/node_modules/pyodide/console.html b/node_modules/pyodide/console.html
-index b5b47ef..b742531 100644
+index b5b47ef..d6b0530 100644
 --- a/node_modules/pyodide/console.html
 +++ b/node_modules/pyodide/console.html
-@@ -120,6 +120,10 @@
+@@ -120,6 +120,9 @@
            BANNER;
          const pyconsole = PyodideConsole(pyodide.globals);
  
-+        const dice = await (await fetch('dice.py')).text();
-+        pyodide.FS.writeFile('/home/pyodide/dice.py', dice);
-+        pyodide.runPython('from dice import *');
++        const { injectDice } = await import('./inject-dice.js');
++        await injectDice(pyodide);
 +
          const namespace = pyodide.globals.get("dict")();
          const await_fut = pyodide.runPython(
