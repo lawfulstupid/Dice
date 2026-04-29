@@ -168,7 +168,7 @@ class Die:
 	
 	# Overloads & operator to produce tuple of two rolls
 	def __and__(this, that):
-		return this.__combine(that, lambda a,b: (a,b))
+		return this.__combine(that, lambda a,b: (*tuplise(a), *tuplise(b)))
 	
 	# Overloads | operator to produce max of two rolls
 	def __or__(this, that):
@@ -242,7 +242,12 @@ d100 = Die(100)
 dF = Die({-1: 2, 0: 2, 1: 2}) # FUDGE/FATE dice
 fate = dF.by(4) # FATE test roll
 
+# Modifies a curried function to accept tuples
 def uncurry(f):
 	def g(t):
 		return f(*t)
 	return g
+
+# Packs singleton values into a degenerate tuple
+def tuplise(t):
+	return t if isinstance(t, tuple) else (t,)
