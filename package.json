@@ -1,0 +1,29 @@
+{
+  "name": "dice",
+  "version": "1.0.0",
+  "description": "Roll and analyse arbitrary sets of dice using native Python 3",
+  "homepage": "https://github.com/lawfulstupid/dice#readme",
+  "bugs": {
+    "url": "https://github.com/lawfulstupid/dice/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lawfulstupid/dice.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "postinstall": "patch-package",
+    "build": "./build-dist",
+    "serve": "http-server dist"
+  },
+  "dependencies": {
+    "patch-package": "^8.0.1",
+    "pyodide": "^0.29.3"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

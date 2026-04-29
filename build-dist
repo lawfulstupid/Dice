@@ -1,0 +1,4 @@
+#!/bin/bash
+mkdir -p dist
+cp dice.py dist/dice.py
+cp node_modules/pyodide/console.html dist/index.html
