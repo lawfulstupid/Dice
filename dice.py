@@ -145,10 +145,6 @@ class Die:
 	def __mul__(this, that):
 		return this.__combine(that, lambda a,b: a*b)
 	
-	# Overloads ^ operator to produce max of two rolls
-	def __xor__(this, that):
-		return this.__combine(that, max)
-	
 	# Overloads / operator to produce floored quotient of two rolls
 	def __truediv__(this, that):
 		return this // that
@@ -169,7 +165,7 @@ class Die:
 	def __and__(this, that):
 		return this.__combine(that, lambda a,b: (a,b))
 	
-	# Overloads | operator to produce max or two rolls
+	# Overloads | operator to produce max of two rolls
 	def __or__(this, that):
 		return this.__combine(that, lambda a,b: max(a,b))
 	
