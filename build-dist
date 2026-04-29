@@ -2,3 +2,4 @@
 mkdir -p dist
 cp dice.py dist/dice.py
 cp node_modules/pyodide/console.html dist/index.html
+cp node_modules/pyodide/pyodide.mjs dist
