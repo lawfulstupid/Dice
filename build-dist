@@ -3,3 +3,7 @@ mkdir -p dist
 cp dice.py dist/dice.py
 cp node_modules/pyodide/console.html dist/index.html
 cp node_modules/pyodide/pyodide.mjs dist
+cp node_modules/pyodide/pyodide-lock.json dist
+cp node_modules/pyodide/pyodide.asm.wasm dist
+cp node_modules/pyodide/pyodide.asm.js dist
+cp node_modules/pyodide/python_stdlib.zip dist
