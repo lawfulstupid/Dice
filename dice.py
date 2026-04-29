@@ -4,25 +4,20 @@ from math import ceil, log10
 
 class Die:
 
-	def __init__(self, pdf):
-		self.pdf = pdf
+	def __init__(self, arg):
+		if isinstance(arg, int):
+			self.pdf = dict.fromkeys(range(1, arg + 1), 1)
+		elif isinstance(arg, Die):
+			self.pdf = arg.pdf
+		elif isinstance(arg, dict):
+			self.pdf = arg
+		else:
+			raise "unknown pdf type"
+		
+		# Make sure PDF is good to use
 		if None in self.pdf:
 			del self.pdf[None]
-		self.totalWeight = sum(pdf.values())
-	
-	@staticmethod
-	def d(n,s=None):
-		if s == None:
-			s = n
-			n = 1
-		pdf = {}
-		for i in range(s):
-			pdf[i+1] = 1
-		d = Die(pdf)
-		t = Die({0: 1})
-		for i in range(n):
-			t = t + d
-		return t
+		self.totalWeight = sum(self.pdf.values())
 	
 	@staticmethod
 	def pure(n):
@@ -45,6 +40,12 @@ class Die:
 	def __next__(self):
 		return self.pdf.__next__()
 	
+	def by(self, n):
+		if n == 0:
+			return Die.zero()
+		else:
+			return self + self.by(n-1)
+
 	def roll(self):
 		r = random.uniform(0, self.totalWeight)
 		s = 0
@@ -190,18 +191,17 @@ class Die:
 				print('#', end='')
 			print()
 
-d = Die.d
 coin = Die({0: 1, 1: 1})
-d2 = d(2)
-d4 = d(4)
-d6 = d(6)
-d8 = d(8)
-d10 = d(10)
-d12 = d(12)
-d20 = d(20)
-d100 = d(100)
-fudge = Die({-1: 2, 0: 2, 1: 2})
-chaos = d4+d6+d8+d10+d12
+d2 = Die(2)
+d4 = Die(4)
+d6 = Die(6)
+d8 = Die(8)
+d10 = Die(10)
+d12 = Die(12)
+d20 = Die(20)
+d100 = Die(100)
+dF = Die({-1: 2, 0: 2, 1: 2}) # FUDGE/FATE dice
+fate = dF.by(4) # FATE test roll
 
 def uncurry(f):
 	def g(t):
