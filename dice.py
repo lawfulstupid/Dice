@@ -4,6 +4,9 @@ from math import ceil, log10
 
 class Die:
 
+	# Creates a Die object from either
+	# An integer n -> a standard n-sided die, e.g. d6 = Die(6)
+	# A dict -> a die with probability distribution equal to given dict
 	def __init__(self, arg):
 		if isinstance(arg, int):
 			self.pdf = dict.fromkeys(range(1, arg + 1), 1)
@@ -19,6 +22,7 @@ class Die:
 			del self.pdf[None]
 		self.totalWeight = sum(self.pdf.values())
 	
+	# A one-sided die that always rolls the given number
 	@staticmethod
 	def pure(n):
 		if n == None:
@@ -26,6 +30,7 @@ class Die:
 		else:
 			return Die({n: 1})
 	
+	# A die that always rolls a 0
 	@staticmethod
 	def zero():
 		return Die.pure(0)
@@ -40,12 +45,14 @@ class Die:
 	def __next__(self):
 		return self.pdf.__next__()
 	
+	# Adds die to itself n times, e.g. Die(6).by(3) = 3d6
 	def by(self, n):
 		if n == 0:
 			return Die.zero()
 		else:
 			return self + self.by(n-1)
 
+	# Simulates rolling the die
 	def roll(self):
 		r = random.uniform(0, self.totalWeight)
 		s = 0
@@ -54,24 +61,26 @@ class Die:
 			if r <= s:
 				return value
 	
+	# Converts this die to an exploding die (which rerolls and adds to self when it rolls maximum value, recursively)
 	def explode(self, limit = 9):
 		return self.map(lambda n: Die.pure(n) + (self.explode(limit - 1) if n == self.getMax() and limit > 0 else 0))
 	
-	def avg(self):
+	# Get expected value
+	def exp(self):
 		s = 0
 		for value in self:
 			s += value * self[value]
 		return s
 	
-	def exp(self):
-		return self.avg()
-	
+	# Get maximum rollable value
 	def getMax(self):
 		return max(self.pdf.keys())
 	
+	# Get minimum rollable value
 	def getMin(self):
 		return min(self.pdf.keys())
 	
+	# Compute the probability of a given scenario, e.g. Die(6).test(lambda n: n >= 3) = 2/3
 	def prob(self, test):
 		successes = 0
 		failures = 0
@@ -81,11 +90,13 @@ class Die:
 			failures += self.pdf[value] * result[False]
 		return successes / float(successes + failures)
 	
+	# Get list of rollable values
 	def values(self):
 		values = list(self.pdf.keys())
 		values.sort()
 		return values
 	
+	# Transform the rollable values, e.g. Die(6).map(lambda n: n * 2)
 	def map(self, f):
 		pdf = {}
 		for value in self:
@@ -95,10 +106,17 @@ class Die:
 					pdf[newValue] = pdf.get(newValue, 0) + self[value] * result[newValue]
 		return Die(pdf)
 
-	def filter(self, test, failValue=0):
+	# Accept only values that pass a test e.g. Die(6).filter(lambda n: n >= 3) is equivalent to d4+2
+	# Change failValue to a real value to have rejects map to that instead of being removed, e.g. Die(6).filter(lambda n: n >= 5, 0) = Die({ 0: 4, 5: 1, 6: 1})
+	def filter(self, test, failValue=None):
 		return self.map(lambda x: x if test(x) else failValue)
 	
-	def combine(this, that, f):
+	# Inverse of above for semantic reasons
+	def reroll(self, test):
+		return self.filter(lambda x: not(test(x)), None)
+	
+	# Generic function to map-reduce two probaility distributions into one
+	def __combine(this, that, f):
 		pdf = {}
 		that = Die.wrap(that)
 		for a in this:
@@ -107,67 +125,86 @@ class Die:
 				pdf[value] = pdf.get(value,0) + this[a]*that[b]
 		return Die(pdf)
 	
-	def compare(this, that, f):
-		return this.combine(that, lambda a,b: int(f(a,b)))
+	# Generic function to cobine rolls with a binary relation
+	def __compare(this, that, f):
+		return this.__combine(that, lambda a,b: int(f(a,b)))
 	
+	# Gets the probability of rolling a particular value
 	def __getitem__(self, value):
 		return self.pdf.get(value,0) / float(self.totalWeight)
 	
+	# Lifts + operator
 	def __add__(this, that):
-		return this.combine(that, lambda a,b: a+b)
+		return this.__combine(that, lambda a,b: a+b)
 	
+	# Lifts - operator
 	def __sub__(this, that):
-		return this.combine(that, lambda a,b: a-b)
+		return this.__combine(that, lambda a,b: a-b)
 	
+	# Lifts * operator
 	def __mul__(this, that):
-		return this.combine(that, lambda a,b: a*b)
+		return this.__combine(that, lambda a,b: a*b)
 	
+	# Overloads ^ operator to produce max of two rolls
 	def __xor__(this, that):
-		return this.combine(that, max)
+		return this.__combine(that, max)
 	
+	# Overloads / operator to produce floored quotient of two rolls
 	def __truediv__(this, that):
 		return this // that
 	
+	# Lifts // operator
 	def __floordiv__(this, that):
-		return this.combine(that, lambda a,b: a // b)
+		return this.__combine(that, lambda a,b: a // b)
 	
+	# Lifts % operator
 	def __mod__(this, that):
-		return this.combine(that, lambda a,b: a % b)
+		return this.__combine(that, lambda a,b: a % b)
 	
+	# Lifts ** operator
 	def __pow__(this, that):
-		return this.combine(that, lambda a,b: a ** b)
+		return this.__combine(that, lambda a,b: a ** b)
 	
+	# Overloads & operator to produce tuple of two rolls
 	def __and__(this, that):
-		return this.combine(that, lambda a,b: (a,b))
+		return this.__combine(that, lambda a,b: (a,b))
 	
+	# Overloads | operator to produce max or two rolls
 	def __or__(this, that):
-		return this.combine(that, lambda a,b: max(a,b))
+		return this.__combine(that, lambda a,b: max(a,b))
 	
+	# Lifts == operator
 	def __eq__(this, that):
-		return this.compare(that, lambda a,b: a == b)
+		return this.__compare(that, lambda a,b: a == b)
 	
+	# Lifts != operator
 	def __ne__(this, that):
-		return this.compare(that, lambda a,b: a != b)
+		return this.__compare(that, lambda a,b: a != b)
 	
+	# Lifts <= operator
 	def __le__(this, that):
-		return this.compare(that, lambda a,b: a <= b)
+		return this.__compare(that, lambda a,b: a <= b)
 	
+	# Lifts < operator
 	def __lt__(this, that):
-		return this.compare(that, lambda a,b: a < b)
+		return this.__compare(that, lambda a,b: a < b)
 	
+	# Lifts >= operator
 	def __ge__(this, that):
-		return this.compare(that, lambda a,b: a >= b)
+		return this.__compare(that, lambda a,b: a >= b)
 
+	# Lifts > operator
 	def __gt__(this, that):
-		return this.compare(that, lambda a,b: a > b)
+		return this.__compare(that, lambda a,b: a > b)
 	
+	# String representations
 	def __repr__(self):
-		return reduce(lambda a,b: a + "\n" + b, self.lines())
+		return reduce(lambda a,b: a + "\n" + b, self.__lines())
 	
 	def __str__(self):
-		return reduce(lambda a,b: a.strip() + ", " + b.strip(), self.lines())
+		return reduce(lambda a,b: a.strip() + ", " + b.strip(), self.__lines())
 
-	def lines(self):
+	def __lines(self):
 		longestValue = 0
 		longestProb = 0
 		for value in self:
@@ -178,6 +215,7 @@ class Die:
 		format = valueFormat + ": " + probFormat
 		return list(map(lambda value: format.format(str(value), self[value]), sorted(self.pdf)))
 	
+	# Produce a graph of the probability distribution
 	def graph(self, screenWidth=100):
 		maxNumWidth = 0
 		maxProb = 0
