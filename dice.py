@@ -16,12 +16,12 @@ class Die:
 			self.pdf = arg
 		else:
 			raise "unknown pdf type"
-		
+
 		# Make sure PDF is good to use
 		if None in self.pdf:
 			del self.pdf[None]
 		self.totalWeight = sum(self.pdf.values())
-	
+
 	# A one-sided die that always rolls the given number
 	@staticmethod
 	def pure(n):
@@ -29,22 +29,22 @@ class Die:
 			return Die({})
 		else:
 			return Die({n: 1})
-	
+
 	# A die that always rolls a 0
 	@staticmethod
 	def zero():
 		return Die.pure(0)
-	
+
 	@staticmethod
 	def wrap(d):
 		return d if isinstance(d, Die) else Die.pure(d)
-	
+
 	def __iter__(self):
 		return self.pdf.__iter__()
-	
+
 	def __next__(self):
 		return self.pdf.__next__()
-	
+
 	# Adds die to itself n times, e.g. Die(6).by(3) = 3d6
 	def by(self, n):
 		if n == 0:
@@ -60,26 +60,26 @@ class Die:
 			s += self[value]
 			if r <= s:
 				return value
-	
+
 	# Converts this die to an exploding die (which rerolls and adds to self when it rolls maximum value, recursively)
 	def explode(self, limit = 9):
 		return self.map(lambda n: Die.pure(n) + (self.explode(limit - 1) if n == self.getMax() and limit > 0 else 0))
-	
+
 	# Get expected value
 	def exp(self):
 		s = 0
 		for value in self:
 			s += value * self[value]
 		return s
-	
+
 	# Get maximum rollable value
 	def getMax(self):
 		return max(self.pdf.keys())
-	
+
 	# Get minimum rollable value
 	def getMin(self):
 		return min(self.pdf.keys())
-	
+
 	# Compute the probability of a given scenario, e.g. Die(6).test(lambda n: n >= 3) = 2/3
 	def prob(self, test):
 		successes = 0
@@ -89,16 +89,16 @@ class Die:
 			successes += self.pdf[value] * result[True]
 			failures += self.pdf[value] * result[False]
 		return successes / float(successes + failures)
-	
+
 	# Get list of rollable values
 	def values(self):
 		values = list(self.pdf.keys())
 		values.sort()
 		return values
-	
+
 	def isTuples(self):
 		return isinstance(self.values()[0], tuple)
-	
+
 	# Transform the rollable values, e.g. Die(6).map(lambda n: n * 2)
 	def map(self, f, autoUncurry=True):
 		if (autoUncurry and self.isTuples()):
@@ -115,11 +115,11 @@ class Die:
 	# Change failValue to a real value to have rejects map to that instead of being removed, e.g. Die(6).filter(lambda n: n >= 5, 0) = Die({ 0: 4, 5: 1, 6: 1})
 	def filter(self, test, failValue=None):
 		return self.map(lambda x: x if test(x) else failValue)
-	
+
 	# Inverse of above for semantic reasons
 	def reroll(self, test):
 		return self.filter(lambda x: not(test(x)), None)
-	
+
 	# Generic function to map-reduce two probaility distributions into one
 	def __combine(this, that, f):
 		pdf = {}
@@ -129,67 +129,67 @@ class Die:
 				value = f(a,b)
 				pdf[value] = pdf.get(value,0) + this[a]*that[b]
 		return Die(pdf)
-	
+
 	# Generic function to cobine rolls with a binary relation
 	def __compare(this, that, f):
 		return this.__combine(that, lambda a,b: int(f(a,b)))
-	
+
 	# Gets the probability of rolling a particular value
 	def __getitem__(self, value):
 		return self.pdf.get(value,0) / float(self.totalWeight)
-	
+
 	# Lifts + operator
 	def __add__(this, that):
 		return this.__combine(that, lambda a,b: a+b)
-	
+
 	# Lifts - operator
 	def __sub__(this, that):
 		return this.__combine(that, lambda a,b: a-b)
-	
+
 	# Lifts * operator
 	def __mul__(this, that):
 		return this.__combine(that, lambda a,b: a*b)
-	
+
 	# Overloads / operator to produce floored quotient of two rolls
 	def __truediv__(this, that):
 		return this // that
-	
+
 	# Lifts // operator
 	def __floordiv__(this, that):
 		return this.__combine(that, lambda a,b: a // b)
-	
+
 	# Lifts % operator
 	def __mod__(this, that):
 		return this.__combine(that, lambda a,b: a % b)
-	
+
 	# Lifts ** operator
 	def __pow__(this, that):
 		return this.__combine(that, lambda a,b: a ** b)
-	
+
 	# Overloads & operator to produce tuple of two rolls
 	def __and__(this, that):
 		return this.__combine(that, lambda a,b: (*tuplise(a), *tuplise(b)))
-	
+
 	# Overloads | operator to produce max of two rolls
 	def __or__(this, that):
 		return this.__combine(that, lambda a,b: max(a,b))
-	
+
 	# Lifts == operator
 	def __eq__(this, that):
 		return this.__compare(that, lambda a,b: a == b)
-	
+
 	# Lifts != operator
 	def __ne__(this, that):
 		return this.__compare(that, lambda a,b: a != b)
-	
+
 	# Lifts <= operator
 	def __le__(this, that):
 		return this.__compare(that, lambda a,b: a <= b)
-	
+
 	# Lifts < operator
 	def __lt__(this, that):
 		return this.__compare(that, lambda a,b: a < b)
-	
+
 	# Lifts >= operator
 	def __ge__(this, that):
 		return this.__compare(that, lambda a,b: a >= b)
@@ -197,11 +197,11 @@ class Die:
 	# Lifts > operator
 	def __gt__(this, that):
 		return this.__compare(that, lambda a,b: a > b)
-	
+
 	# String representations
 	def __repr__(self):
 		return reduce(lambda a,b: a + "\n" + b, self.__lines())
-	
+
 	def __str__(self):
 		return reduce(lambda a,b: a.strip() + ", " + b.strip(), self.__lines())
 
@@ -215,7 +215,7 @@ class Die:
 		probFormat = "{1:." + str(longestProb) + "f}"
 		format = valueFormat + ": " + probFormat
 		return list(map(lambda value: format.format(str(value), self[value]), sorted(self.pdf)))
-	
+
 	# Produce a graph of the probability distribution
 	def graph(self, screenWidth=100):
 		maxNumWidth = 0
